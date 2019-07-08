@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>IO CHAT</title>
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+	<script src="http://code.jquery.com/jquery-latest.min.js"></script>
+	<script src="/socket.io/socket.io.js"></script>
+
+	<style type="text/css">
+
+		body{
+			background-color: #404040;
+		}
+
+		#messageArea{
+			display: none;
+		}
+
+		hr{
+			border-color: white;
+			margin-top: 0;
+			width: 75%;
+			border-width: 5px;
+		}
+
+	</style>
+</head>
+<body>
+	<div class="container" style="margin-top: 50px;">
+
+		<div id="userFormArea" class="row">
+			<div class="col-md-3">	
+			</div>
+
+			<div class="col-md-6 inputform">
+				<div class="card text-center">
+				  <div class="card-header" style="font-size: 20px;">
+				  	<strong>LOGIN PAGE</strong>
+				  </div>
+				  <form class="form1" id="userForm">
+				  	<div class="card-body">
+						<div class="form-group">
+							<label class="label1"><strong>Enter Username</strong></label>
+							<input class="input1 form-control" id="username" placeholder="Your name.." />
+							<br/>
+						</div>
+						
+				  	</div>
+				    <div class="card-footer">
+						<input type="submit" class="btn btn-primary" value="Login"/>
+				    </div>
+				  </form>	
+				</div>
+
+				<br><br><br><br><br><br><br><br><br>
+
+				<h1 style="text-align: center;color: black;">GROUP CHAT</h1>
+
+				<hr>;
+			</div>
+
+			<div class="col-md-3"></div>
+		</div>
+
+
+		<div id="messageArea">
+		<div class="row">
+			<div class="col-md-8"> 
+				<div class="chat" id ="chat"></div>
+				<form id="messageForm">
+					<div class="form-group">
+						<label style="font-size: 17px; color: #FF9900;"><strong>Enter Message:</strong></label>
+						<textarea class="form-control" id="message"></textarea>
+						<br/>
+						<input type="submit" class="btn btn-primary" value="Send Message"/>
+					</div>
+				</form>					
+			</div>
+			<div class="col-md-4">
+
+				<div class="card" style="width: 18rem;">
+					  <div class="card-header">
+					  	<strong>ONLINE USERS</strong>
+					  </div>
+					<ul class="list-group list-group-flush" style="width: 12rem;">
+						<li class="list-group-item" id="users"></li>
+					</ul>
+					
+				</div>
+<br><br><br><br><br><br>
+			</div>			
+		</div>
+
+		<div class="row">
+			<div class="col-md-6">
+<!-- 				<div class="chat" id ="chat"></div>
+				<form id="messageForm">
+					<div class="form-group">
+						<label style="font-size: 17px; color: #FF9900;"><strong>Enter Message:</strong></label>
+						<textarea class="form-control" id="message"></textarea>
+						<br/>
+						<input type="submit" class="btn btn-primary" value="Send Message"/>
+					</div>
+				</form>	 -->
+			</div>			
+		</div>
+
+
+		</div>
+	</div>
+	<script>
+		$(function(){
+			var socket = io.connect();
+			var $messageForm = $('#messageForm');
+			var $message = $('#message');
+			var $chat = $('#chat');
+			var $messageArea = $('#messageArea');
+			var $userFormArea = $('#userFormArea');
+			var $userForm = $('#userForm');
+			var $users = $('#users');
+			var $username = $('#username')
+
+			$messageForm.submit(function(e){
+				e.preventDefault();
+			//	console.log($message.val());
+				socket.emit('send message', $message.val());
+				$message.val('');
+			});
+
+			socket.on('new message', function(data){
+				$chat.append('<div style="font-size:20px;color:white;"><strong>' +data.user +'</strong> : ' + data.message + '</div><br>');
+			});
+
+			$userForm.submit(function(e){
+				e.preventDefault();
+				socket.emit('new user', $username.val(), function(data){
+					if(data){
+						$userFormArea.hide();
+						$messageArea.show();
+					}
+				});
+				$username.val('');
+			});			
+
+			socket.on('get users', function(data){
+				var html ='';
+				for(i = 0; i<data.length; i++){
+					html += '<li class = "list-group-item">' + data[i] + '</li>';
+				}
+
+				$users.html(html);
+			});
+
+		});
+	</script>
+</body>
+</html>
